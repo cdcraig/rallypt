@@ -14,6 +14,26 @@ const MEMBER_SELECT = `
 // ── Read ──────────────────────────────────────────────────────────────────────
 
 /**
+ * Fetch a single group by ID with its member count.
+ */
+export async function fetchGroupInfo(groupId: string): Promise<GroupWithMeta> {
+  const { data, error } = await supabase
+    .from('groups')
+    .select(GROUP_SELECT)
+    .eq('id', groupId)
+    .single()
+
+  if (error) throw error
+
+  const { count } = await supabase
+    .from('group_members')
+    .select('*', { count: 'exact', head: true })
+    .eq('group_id', groupId)
+
+  return { ...(data as unknown as Group), member_count: count ?? 0 }
+}
+
+/**
  * Fetch all groups the given user belongs to, with member counts.
  */
 export async function fetchUserGroups(userId: string): Promise<GroupWithMeta[]> {
