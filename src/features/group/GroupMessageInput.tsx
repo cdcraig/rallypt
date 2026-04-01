@@ -2,10 +2,11 @@ import { useState, useRef, type KeyboardEvent } from 'react'
 
 interface Props {
   onSend: (content: string) => void
+  onTyping?: () => void
   disabled?: boolean
 }
 
-export function GroupMessageInput({ onSend, disabled }: Props) {
+export function GroupMessageInput({ onSend, onTyping, disabled }: Props) {
   const [value, setValue] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -39,7 +40,7 @@ export function GroupMessageInput({ onSend, disabled }: Props) {
           ref={textareaRef}
           rows={1}
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => { setValue(e.target.value); onTyping?.() }}
           onKeyDown={handleKeyDown}
           onInput={handleInput}
           placeholder="Message…"

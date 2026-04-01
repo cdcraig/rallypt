@@ -5,6 +5,10 @@ import Loader from "../../components/Loader";
 import useIntersectionObserver from "./useIntersectionObserver";
 import useScrollBehavior from "./useScrollBehavior";
 import ShortTextMessage from "../../components/ShortTextMessage";
+import useConvInfo from "./useConvInfo";
+import { useUser } from "../authentication/useUser";
+import { useConvReadReceipts } from "../../hooks/useConvReadReceipts";
+import { useTypingIndicator } from "../../hooks/useTypingIndicator";
 
 function Messages() {
   const {
@@ -15,6 +19,21 @@ function Messages() {
     hasNextPage,
     error,
   } = useMessages();
+
+  const { convInfo } = useConvInfo();
+  const { user } = useUser();
+  const conversationId = convInfo?.id ?? '';
+  const currentUserId = user?.id ?? '';
+
+  const currentUser = user
+    ? { id: user.id, username: user.user_metadata?.username ?? user.email ?? 'You' }
+    : null;
+
+  const { isReadByOther, markRead } = useConvReadReceipts(conversationId, currentUserId);
+  const { typingUsers } = useTypingIndicator(
+    conversationId ? `conv-${conversationId}` : '',
+    currentUser
+  );
 
   const topRef = useRef(null);
   const bottomRef = useRef();
@@ -42,6 +61,14 @@ function Messages() {
       fetchNextPage();
     }
   }, [isIntersectingTop, hasNextPage, fetchNextPage]);
+
+  // Mark read when bottom is visible
+  useEffect(() => {
+    if (!isIntersectingBtm || !pages) return;
+    const allMessages = pages.flat();
+    const lastMsg = allMessages[allMessages.length - 1];
+    if (lastMsg?.id && markRead) markRead(lastMsg.id);
+  }, [isIntersectingBtm, pages]); // eslint-disable-line react-hooks/exhaustive-deps
 
   ////////////
   // Scroll behavior hook
@@ -91,7 +118,11 @@ function Messages() {
               page.length ? (
                 <span key={index} className="flex w-full flex-col">
                   {page.map((message) => (
-                    <MessageItem key={message.id} message={message} />
+                    <MessageItem
+                      key={message.id}
+                      message={message}
+                      isRead={isReadByOther(message.created_at)}
+                    />
                   ))}
 
                   {index === 0 && <span ref={lastPageBtm}></span>}
@@ -106,8 +137,39 @@ function Messages() {
           </>
         )}
 
+        {typingUsers.length > 0 && (
+          <div className="flex items-center gap-2 px-1 py-2 text-slate-400">
+            <TypingDots />
+            <span className="text-xs">
+              {typingUsers.length === 1
+                ? `${typingUsers[0].username} is typing…`
+                : `${typingUsers.map((u) => u.username).join(', ')} are typing…`}
+            </span>
+          </div>
+        )}
+
         <span ref={bottomRef}></span>
       </div>
+    </div>
+  );
+}
+
+function TypingDots() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          className="animate-bounce"
+          style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: 'currentColor',
+            animationDelay: `${i * 0.15}s`,
+          }}
+        />
+      ))}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useSendNewMessage } from "./useSendNewMessage";
 import { v4 as uuid } from "uuid";
 import Loader from "../../components/Loader";
 import useConvInfo from "./useConvInfo";
+import { useTypingIndicator } from "../../hooks/useTypingIndicator";
 
 function MessageInputBar() {
   const {
@@ -20,6 +21,14 @@ function MessageInputBar() {
   const friendUserId = convInfo?.friendInfo?.id;
   const myUserId = user?.id;
   const inputRef = useRef(null);
+
+  const currentUser = user
+    ? { id: user.id, username: user.user_metadata?.username ?? user.email ?? 'You' }
+    : null;
+  const { startTyping, stopTyping } = useTypingIndicator(
+    conversationId ? `conv-${conversationId}` : '',
+    currentUser
+  );
 
   function handleSendNewMessage(e) {
     e.preventDefault();
@@ -40,6 +49,7 @@ function MessageInputBar() {
     };
 
     setNewMessage("");
+    stopTyping();
 
     // Make the actual request to the server
     sendNewMessage(messageObj, {
@@ -60,7 +70,7 @@ function MessageInputBar() {
           className="h-12 w-full bg-transparent pl-4 pr-2 outline-none"
           ref={inputRef}
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={(e) => { setNewMessage(e.target.value); startTyping(); }}
           type="text"
           placeholder="Message"
           id="inputMessage"
