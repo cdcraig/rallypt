@@ -1,22 +1,23 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { GroupMessageView } from './features/group/GroupMessageView'
+import { ChatList } from './features/chat/ChatList'
+import { CreateGroupFlow } from './features/group/CreateGroupFlow'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Group chat view — primary route for now */}
+        {/* Chat list — home screen */}
+        <Route path="/" element={<ChatList />} />
+
+        {/* Create new group chat */}
+        <Route path="/chat/new-group" element={<CreateGroupFlow />} />
+
+        {/* Group chat view */}
         <Route path="/chat/group/:groupId" element={<GroupMessageView />} />
 
-        {/* Placeholder root */}
-        <Route
-          path="*"
-          element={
-            <div className="flex-1 flex items-center justify-center bg-[#0a1628] text-slate-400 text-sm">
-              RallyPT — navigate to /chat/group/:groupId
-            </div>
-          }
-        />
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )
