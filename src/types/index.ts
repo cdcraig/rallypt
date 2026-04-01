@@ -31,19 +31,8 @@ export interface Message {
   id: string
   created_at: string
   sender_id: string
-  group_id: string | null
-  recipient_id: string | null
+  recipient_id?: string | null
+  group_id?: string | null
   content: string
   sender?: AppUser
-}
-
-/** Unified chat list entry — represents either a group or a 1:1 conversation */
-export interface ChatEntry {
-  id: string // group_id or the other user's id
-  type: 'group' | 'dm'
-  name: string
-  avatarUrl: string | null
-  lastMessage: string | null
-  lastMessageAt: string | null
-  unreadCount: number
 }
