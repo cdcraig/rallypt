@@ -27,6 +27,16 @@ export interface GroupWithMeta extends Group {
   member_count: number
 }
 
+export interface ChatEntry {
+  id: string
+  type: 'group' | 'dm'
+  name: string
+  avatarUrl: string | null
+  lastMessage: string | null
+  lastMessageAt: string | null
+  unreadCount: number
+}
+
 export interface Message {
   id: string
   created_at: string
@@ -34,5 +44,8 @@ export interface Message {
   recipient_id?: string | null
   group_id?: string | null
   content: string
+  message_type: 'user' | 'system'
+  pinned_at?: string | null
+  pinned_by?: string | null
   sender?: AppUser
 }

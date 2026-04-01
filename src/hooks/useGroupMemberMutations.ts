@@ -55,7 +55,7 @@ export function useRemoveGroupMember(groupId: string) {
 
       if (error) throw error
     },
-    onSuccess: (_data, userId) => {
+    onSuccess: (_data, _userId) => {
       queryClient.invalidateQueries({ queryKey: ['groupMembers', groupId] })
       queryClient.invalidateQueries({ queryKey: ['groupInfo', groupId] })
       // If the removed user was the current user, also invalidate their group list

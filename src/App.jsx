@@ -18,6 +18,7 @@ import AboutPage from "./components/AboutPage";
 import LandingPage from "./components/LandingPage";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsOfService from "./components/TermsOfService";
+import SettingsPage from "./features/settings/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,14 @@ function App() {
               <Route
                 path="account-confirmation"
                 element={<AccountConfirmation />}
+              />
+              <Route
+                path="settings"
+                element={
+                  <ProtectedRoute>
+                    <SettingsPage />
+                  </ProtectedRoute>
+                }
               />
               <Route path="about" element={<AboutPage />} />
               <Route path="privacy" element={<PrivacyPolicy />} />

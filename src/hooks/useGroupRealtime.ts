@@ -50,6 +50,37 @@ export function useGroupRealtime(groupId: string) {
           )
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `group_id=eq.${groupId}`,
+        },
+        (payload) => {
+          const updated = payload.new as Message
+
+          // Update pinned_at/pinned_by in the messages cache
+          queryClient.setQueryData<{ pages: Message[][]; pageParams: unknown[] }>(
+            ['groupMessages', groupId],
+            (old) => {
+              if (!old) return old
+              const pages = old.pages.map((page) =>
+                page.map((m) =>
+                  m.id === updated.id
+                    ? { ...m, pinned_at: updated.pinned_at, pinned_by: updated.pinned_by }
+                    : m
+                )
+              )
+              return { ...old, pages }
+            }
+          )
+
+          // Sync the pinned banner
+          queryClient.invalidateQueries({ queryKey: ['pinnedMessage', groupId] })
+        }
+      )
       .subscribe()
 
     return () => {

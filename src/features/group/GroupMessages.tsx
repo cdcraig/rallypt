@@ -1,16 +1,8 @@
-import { useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import type { InfiniteData } from '@tanstack/react-query'
 import { GroupMessageItem } from './GroupMessageItem'
+import { useReadReceipts } from '../../hooks/useReadReceipts'
 import type { Message } from '../../types'
-
-export interface GroupMessagesRef {
-  scrollToMessage: (id: string) => void
-}
-
-interface TypingUser {
-  userId: string
-  username: string
-}
 
 interface Props {
   data: InfiniteData<Message[]> | undefined
@@ -19,39 +11,28 @@ interface Props {
   hasNextPage: boolean
   fetchNextPage: () => void
   currentUserId: string
-  isCurrentUserAdmin: boolean
-  onPin: (messageId: string, pin: boolean) => void
-  readSet?: Set<string>
-  onMarkRead?: (messageId: string) => void
-  typingUsers?: TypingUser[]
+  groupId: string
+  memberCount: number
 }
 
-export const GroupMessages = forwardRef<GroupMessagesRef, Props>(function GroupMessages(
-  {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-    currentUserId,
-    isCurrentUserAdmin,
-    onPin,
-    readSet,
-    onMarkRead,
-    typingUsers = [],
-  },
-  ref
-) {
+export function GroupMessages({
+  data,
+  isLoading,
+  isFetchingNextPage,
+  hasNextPage,
+  fetchNextPage,
+  currentUserId,
+  groupId,
+  memberCount,
+}: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const prevScrollHeight = useRef(0)
 
-  useImperativeHandle(ref, () => ({
-    scrollToMessage: (id: string) => {
-      const el = containerRef.current?.querySelector(`[data-message-id="${id}"]`)
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    },
-  }))
+  const messages = data?.pages.flat() ?? []
+  const messageIds = messages.map((m) => m.id)
+
+  const { readCounts, observeMessageEl } = useReadReceipts(groupId, currentUserId, messageIds)
 
   // Scroll to bottom on initial load and new messages
   useEffect(() => {
@@ -72,33 +53,13 @@ export const GroupMessages = forwardRef<GroupMessagesRef, Props>(function GroupM
     if (diff > 0) container.scrollTop += diff
   })
 
-  const isAtBottom = useCallback(() => {
-    const container = containerRef.current
-    if (!container) return false
-    return container.scrollHeight - container.scrollTop - container.clientHeight < 80
-  }, [])
-
-  // Mark read when new messages arrive and we're at the bottom
-  const lastMessageId = data?.pages.at(-1)?.at(-1)?.id
-  useEffect(() => {
-    if (lastMessageId && isAtBottom() && onMarkRead) {
-      onMarkRead(lastMessageId)
-    }
-  }, [lastMessageId]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleScroll = useCallback(() => {
     const container = containerRef.current
     if (!container) return
     if (container.scrollTop < 100 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage()
     }
-    // Mark read when user scrolls to bottom
-    if (isAtBottom() && lastMessageId && onMarkRead) {
-      onMarkRead(lastMessageId)
-    }
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isAtBottom, lastMessageId, onMarkRead])
-
-  const messages = data?.pages.flat() ?? []
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   if (isLoading) {
     return (
@@ -131,47 +92,25 @@ export const GroupMessages = forwardRef<GroupMessagesRef, Props>(function GroupM
 
       {messages.map((msg, idx) => {
         const prev = messages[idx - 1]
-        const showSender = !prev || prev.sender_id !== msg.sender_id || prev.message_type === 'system'
-        const canPin = msg.sender_id === currentUserId || isCurrentUserAdmin
+        const showSender = !prev || prev.sender_id !== msg.sender_id
+        const isOwn = msg.sender_id === currentUserId
         return (
-          <GroupMessageItem
+          <div
             key={msg.id}
-            message={msg}
-            isOwn={msg.sender_id === currentUserId}
-            showSender={showSender}
-            isRead={readSet?.has(msg.id)}
-            canPin={canPin}
-            onPin={onPin}
-          />
+            ref={!isOwn ? (el) => observeMessageEl(el, msg.id) : undefined}
+          >
+            <GroupMessageItem
+              message={msg}
+              isOwn={isOwn}
+              showSender={showSender}
+              readCount={isOwn ? (readCounts[msg.id] ?? 0) : undefined}
+              memberCount={memberCount}
+            />
+          </div>
         )
       })}
 
-      {typingUsers.length > 0 && (
-        <div className="flex items-center gap-2 px-1 py-1 text-slate-400">
-          <TypingDots />
-          <span className="text-xs">
-            {typingUsers.length === 1
-              ? `${typingUsers[0].username} is typing…`
-              : `${typingUsers.map((u) => u.username).join(', ')} are typing…`}
-          </span>
-        </div>
-      )}
-
       <div ref={bottomRef} />
-    </div>
-  )
-})
-
-function TypingDots() {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
-          style={{ animationDelay: `${i * 0.15}s` }}
-        />
-      ))}
     </div>
   )
 }

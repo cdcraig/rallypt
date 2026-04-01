@@ -1,24 +1,38 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createGroup } from '../lib/queries/groups'
+import { createGroup, addGroupMember } from '../lib/queries/groups'
+import { useAuth } from './useAuth'
 
-export function useCreateGroup(userId: string | undefined) {
+export function useCreateGroup() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
 
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       name,
       departmentId,
       iconUrl,
+      memberIds = [],
     }: {
       name: string
       departmentId?: string | null
       iconUrl?: string | null
+      memberIds?: string[]
     }) => {
-      if (!userId) throw new Error('Not authenticated')
-      return createGroup({ name, createdBy: userId, departmentId, iconUrl })
+      if (!user?.id) throw new Error('Not authenticated')
+      const group = await createGroup({ name, createdBy: user.id, departmentId, iconUrl })
+
+      // Add additional members (creator is already added by DB trigger)
+      await Promise.all(
+        memberIds
+          .filter((id) => id !== user.id)
+          .map((userId) => addGroupMember({ groupId: group.id, userId })),
+      )
+
+      return group
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['userGroups', userId] })
+      queryClient.invalidateQueries({ queryKey: ['userGroups', user?.id] })
+      queryClient.invalidateQueries({ queryKey: ['chatList', user?.id] })
     },
   })
 }

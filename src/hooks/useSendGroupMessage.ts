@@ -43,6 +43,7 @@ export function useSendGroupMessage(groupId: string, currentUser: AppUser | null
         sender_id: currentUser?.id ?? '',
         group_id: groupId,
         content,
+        message_type: 'user' as const,
         sender: currentUser ?? undefined,
       }
 

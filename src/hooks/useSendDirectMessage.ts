@@ -45,6 +45,7 @@ export function useSendDirectMessage(recipientId: string, currentUser: AppUser |
         recipient_id: recipientId,
         group_id: null,
         content,
+        message_type: 'user' as const,
         sender: currentUser ?? undefined,
       }
 

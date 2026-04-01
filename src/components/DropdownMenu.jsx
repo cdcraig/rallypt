@@ -5,6 +5,7 @@ import {
   RiSettings2Line,
   RiLogoutCircleLine,
 } from "react-icons/ri";
+import { HiCog6Tooth } from "react-icons/hi2";
 import { useSignout } from "../features/authentication/useSignout";
 import { useUi } from "../contexts/UiContext";
 import { useUser } from "../features/authentication/useUser";
@@ -45,6 +46,11 @@ export default function DropdownMenu() {
             <RiSettings2Line />
             <div>My Account</div>
           </Menu.ButtonItem>
+
+          <Menu.RouteItem to={"/settings"}>
+            <HiCog6Tooth />
+            <div>Settings</div>
+          </Menu.RouteItem>
 
           <Menu.TogglerItem isChecked={isDarkMode} toggler={toggleDarkMode}>
             <RiMoonClearLine />

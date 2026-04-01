@@ -3,7 +3,7 @@ import type { Group, GroupMember, GroupWithMeta, Message } from '../../types'
 
 const GROUP_SELECT = 'id, name, icon_url, created_by, department_id, created_at'
 const MESSAGE_SELECT = `
-  id, created_at, sender_id, group_id, content,
+  id, created_at, sender_id, group_id, content, message_type,
   sender:users!sender_id(id, fullname, username, avatar_url)
 `
 const MEMBER_SELECT = `
