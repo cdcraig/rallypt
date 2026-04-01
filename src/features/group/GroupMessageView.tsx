@@ -58,6 +58,8 @@ export function GroupMessageView() {
         hasNextPage={!!hasNextPage}
         fetchNextPage={fetchNextPage}
         currentUserId={user?.id ?? ''}
+        groupId={groupId}
+        memberCount={members.length}
       />
 
       <GroupMessageInput

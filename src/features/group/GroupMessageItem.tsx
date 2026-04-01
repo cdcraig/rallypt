@@ -4,6 +4,8 @@ interface Props {
   message: Message
   isOwn: boolean
   showSender: boolean
+  readCount?: number
+  memberCount?: number
 }
 
 function formatTime(isoString: string): string {
@@ -29,7 +31,31 @@ function avatarColor(userId: string): string {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
 }
 
-export function GroupMessageItem({ message, isOwn, showSender }: Props) {
+function ReadIndicator({ readCount, memberCount }: { readCount: number; memberCount: number }) {
+  // memberCount includes the sender, so "everyone read" means readCount >= memberCount - 1
+  const allRead = readCount >= memberCount - 1
+  const anyRead = readCount > 0
+  const color = allRead ? 'text-blue-400' : 'text-slate-500'
+
+  if (!anyRead) {
+    // Single check — delivered, nobody has read it yet
+    return (
+      <svg className="text-slate-500 shrink-0" width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M1.5 6.5L4.5 9.5L10.5 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    )
+  }
+
+  // Double check — at least one read (blue = all, gray = some)
+  return (
+    <svg className={`${color} shrink-0`} width="16" height="12" viewBox="0 0 16 12" fill="none">
+      <path d="M1 6.5L4 9.5L10 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M5 6.5L8 9.5L14 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+export function GroupMessageItem({ message, isOwn, showSender, readCount, memberCount }: Props) {
   const sender = message.sender
 
   return (
@@ -69,9 +95,14 @@ export function GroupMessageItem({ message, isOwn, showSender }: Props) {
           {message.content}
         </div>
 
-        <span className="text-xs text-slate-500 mt-1 px-1">
-          {formatTime(message.created_at)}
-        </span>
+        <div className="flex items-center gap-1 mt-1 px-1">
+          <span className="text-xs text-slate-500">
+            {formatTime(message.created_at)}
+          </span>
+          {isOwn && readCount !== undefined && memberCount !== undefined && memberCount > 1 && (
+            <ReadIndicator readCount={readCount} memberCount={memberCount} />
+          )}
+        </div>
       </div>
     </div>
   )

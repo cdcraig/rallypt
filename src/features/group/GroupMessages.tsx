@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 import type { InfiniteData } from '@tanstack/react-query'
 import { GroupMessageItem } from './GroupMessageItem'
+import { useReadReceipts } from '../../hooks/useReadReceipts'
 import type { Message } from '../../types'
 
 interface Props {
@@ -10,6 +11,8 @@ interface Props {
   hasNextPage: boolean
   fetchNextPage: () => void
   currentUserId: string
+  groupId: string
+  memberCount: number
 }
 
 export function GroupMessages({
@@ -19,10 +22,17 @@ export function GroupMessages({
   hasNextPage,
   fetchNextPage,
   currentUserId,
+  groupId,
+  memberCount,
 }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const prevScrollHeight = useRef(0)
+
+  const messages = data?.pages.flat() ?? []
+  const messageIds = messages.map((m) => m.id)
+
+  const { readCounts, observeMessageEl } = useReadReceipts(groupId, currentUserId, messageIds)
 
   // Scroll to bottom on initial load and new messages
   useEffect(() => {
@@ -50,8 +60,6 @@ export function GroupMessages({
       fetchNextPage()
     }
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
-
-  const messages = data?.pages.flat() ?? []
 
   if (isLoading) {
     return (
@@ -85,13 +93,20 @@ export function GroupMessages({
       {messages.map((msg, idx) => {
         const prev = messages[idx - 1]
         const showSender = !prev || prev.sender_id !== msg.sender_id
+        const isOwn = msg.sender_id === currentUserId
         return (
-          <GroupMessageItem
+          <div
             key={msg.id}
-            message={msg}
-            isOwn={msg.sender_id === currentUserId}
-            showSender={showSender}
-          />
+            ref={!isOwn ? (el) => observeMessageEl(el, msg.id) : undefined}
+          >
+            <GroupMessageItem
+              message={msg}
+              isOwn={isOwn}
+              showSender={showSender}
+              readCount={isOwn ? (readCounts[msg.id] ?? 0) : undefined}
+              memberCount={memberCount}
+            />
+          </div>
         )
       })}
 
