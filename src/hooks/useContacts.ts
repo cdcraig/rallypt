@@ -6,11 +6,14 @@ import { useAuth } from './useAuth'
 async function searchUsers(query: string, currentUserId: string): Promise<AppUser[]> {
   if (query.length < 2) return []
 
+  // Strip characters that are meaningful in PostgREST filter strings to prevent injection
+  const safe = query.replace(/[(),]/g, '')
+
   const { data, error } = await supabase
     .from('users')
     .select('id, email, username, fullname, avatar_url')
     .neq('id', currentUserId)
-    .or(`fullname.ilike.%${query}%,username.ilike.%${query}%`)
+    .or(`fullname.ilike.%${safe}%,username.ilike.%${safe}%`)
     .limit(20)
 
   if (error) throw error

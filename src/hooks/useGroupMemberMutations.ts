@@ -20,6 +20,26 @@ export function useAddGroupMember(groupId: string) {
   })
 }
 
+// Promote a group member to admin. Only admins can do this (enforced by RLS).
+export function usePromoteGroupMember(groupId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { error } = await supabase
+        .from('group_members')
+        .update({ role: 'admin' })
+        .eq('group_id', groupId)
+        .eq('user_id', userId)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groupMembers', groupId] })
+    },
+  })
+}
+
 // Remove a member from a group.
 // Admins can remove anyone; members can only remove themselves (enforced by RLS).
 export function useRemoveGroupMember(groupId: string) {

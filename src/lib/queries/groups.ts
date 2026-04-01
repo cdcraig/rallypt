@@ -163,6 +163,27 @@ export async function addGroupMember({
 }
 
 /**
+ * Promote a group member to admin. Requires the caller to be a group admin (enforced by RLS).
+ */
+export async function updateGroupMemberRole({
+  groupId,
+  userId,
+  role,
+}: {
+  groupId: string
+  userId: string
+  role: 'admin' | 'member'
+}): Promise<void> {
+  const { error } = await supabase
+    .from('group_members')
+    .update({ role })
+    .eq('group_id', groupId)
+    .eq('user_id', userId)
+
+  if (error) throw error
+}
+
+/**
  * Remove a user from a group. Admins can remove anyone; members can remove
  * themselves (leave group). Both cases are enforced by RLS.
  */

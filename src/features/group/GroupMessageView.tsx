@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { GroupTopBar } from './GroupTopBar'
 import { GroupMessages } from './GroupMessages'
 import { GroupMessageInput } from './GroupMessageInput'
+import { GroupMembersSheet } from './GroupMembersSheet'
 import { useGroupInfo } from '../../hooks/useGroupInfo'
 import { useGroupMessages } from '../../hooks/useGroupMessages'
 import { useSendGroupMessage } from '../../hooks/useSendGroupMessage'
@@ -10,6 +12,8 @@ import { useAuth } from '../../hooks/useAuth'
 
 export function GroupMessageView() {
   const { groupId } = useParams<{ groupId: string }>()
+
+  const [showMembers, setShowMembers] = useState(false)
 
   const { user } = useAuth()
   const { data: group, isLoading: groupLoading } = useGroupInfo(groupId ?? '')
@@ -34,7 +38,7 @@ export function GroupMessageView() {
 
   return (
     <div className="flex flex-col h-full bg-[#0a1628]">
-      <GroupTopBar group={group} isLoading={groupLoading} />
+      <GroupTopBar group={group} isLoading={groupLoading} onMembersPress={() => setShowMembers(true)} />
 
       <GroupMessages
         data={data}
@@ -49,6 +53,14 @@ export function GroupMessageView() {
         onSend={sendMessage}
         disabled={sending || !user}
       />
+
+      {showMembers && user && (
+        <GroupMembersSheet
+          groupId={groupId ?? ''}
+          currentUserId={user.id}
+          onClose={() => setShowMembers(false)}
+        />
+      )}
     </div>
   )
 }

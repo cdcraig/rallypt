@@ -4,9 +4,10 @@ import type { GroupWithMeta } from '../../types'
 interface Props {
   group: GroupWithMeta | undefined
   isLoading: boolean
+  onMembersPress?: () => void
 }
 
-export function GroupTopBar({ group, isLoading }: Props) {
+export function GroupTopBar({ group, isLoading, onMembersPress }: Props) {
   const navigate = useNavigate()
 
   return (
@@ -32,7 +33,11 @@ export function GroupTopBar({ group, isLoading }: Props) {
         )}
       </div>
 
-      <div className="flex-1 min-w-0">
+      <button
+        className="flex-1 min-w-0 text-left"
+        onClick={onMembersPress}
+        disabled={!onMembersPress}
+      >
         {isLoading ? (
           <div className="space-y-1.5">
             <div className="h-3.5 w-32 bg-[#1e293b] rounded animate-pulse" />
@@ -46,7 +51,7 @@ export function GroupTopBar({ group, isLoading }: Props) {
             </p>
           </>
         )}
-      </div>
+      </button>
     </div>
   )
 }
