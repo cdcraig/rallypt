@@ -31,7 +31,8 @@ export interface Message {
   id: string
   created_at: string
   sender_id: string
-  group_id: string
+  recipient_id?: string | null
+  group_id?: string | null
   content: string
   sender?: AppUser
 }

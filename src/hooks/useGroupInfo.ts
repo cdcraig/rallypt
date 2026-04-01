@@ -5,7 +5,7 @@ import type { GroupWithMeta } from '../types'
 async function fetchGroupInfo(groupId: string): Promise<GroupWithMeta> {
   const { data: group, error } = await supabase
     .from('groups')
-    .select('id, name, icon, created_by, department_id, created_at')
+    .select('id, name, icon:icon_url, created_by, department_id, created_at')
     .eq('id', groupId)
     .single()
 
