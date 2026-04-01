@@ -1,7 +1,8 @@
-import { HiOutlineUserCircle, HiOutlineCheck, HiOutlineXMark, HiArrowLeft } from "react-icons/hi2";
+import { HiOutlineCheck, HiOutlineXMark, HiArrowLeft } from "react-icons/hi2";
 import { useIncomingRequests, useRespondToRequest } from "./useContactData";
 import Loader from "../../components/Loader";
 import ShortTextMessage from "../../components/ShortTextMessage";
+import UserAvatar from "../../components/UserAvatar";
 
 function ContactRequestsView({ onBack }) {
   const { data: requests = [], isLoading } = useIncomingRequests();
@@ -19,7 +20,7 @@ function ContactRequestsView({ onBack }) {
         </button>
         <span className="font-semibold">Contact Requests</span>
         {requests.length > 0 && (
-          <span className="ml-auto rounded-full bg-blue-600 px-2 py-0.5 text-xs text-white">
+          <span className="ml-auto flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-navy-light px-1.5 text-xs font-bold text-white">
             {requests.length}
           </span>
         )}
@@ -44,25 +45,14 @@ function ContactRequestsView({ onBack }) {
                   key={req.id}
                   className="flex items-center gap-3 rounded-lg p-2"
                 >
-                  <span className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-full">
-                    {req.fromUser.avatar_url ? (
-                      <img
-                        src={req.fromUser.avatar_url}
-                        alt={req.fromUser.fullname}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <HiOutlineUserCircle
-                        size={50}
-                        viewBox="2 2 24 24"
-                        opacity={0.5}
-                        strokeWidth="1"
-                      />
-                    )}
-                  </span>
+                  <UserAvatar
+                    src={req.fromUser.avatar_url}
+                    name={req.fromUser.fullname}
+                    size={44}
+                  />
 
                   <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate font-bold text-sm">
+                    <span className="truncate text-sm font-bold">
                       {req.fromUser.fullname}
                     </span>
                     <span className="truncate text-xs opacity-60">
@@ -76,7 +66,7 @@ function ContactRequestsView({ onBack }) {
                         respond({ requestId: req.id, status: "accepted" })
                       }
                       disabled={isResponding}
-                      className="flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1.5 text-xs text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                      className="flex items-center gap-1 rounded-full bg-navy-light px-3 py-1.5 text-xs text-white transition-colors hover:bg-navy disabled:opacity-50"
                     >
                       <HiOutlineCheck size={13} />
                       Accept

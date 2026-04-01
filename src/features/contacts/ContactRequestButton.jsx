@@ -12,11 +12,11 @@ import {
 } from "./useContactData";
 
 // Renders the appropriate action for a user based on their contact relationship:
-//   none           → Add button
+//   none             → Add button
 //   outgoing_pending → Pending (click to withdraw)
 //   incoming_pending → Accept + Decline
-//   contact        → Contact badge
-//   null (loading) → skeleton pill
+//   contact          → Contact badge
+//   null (loading)   → skeleton pill
 
 function ContactRequestButton({ userId }) {
   const { status, requestId, isLoading } = useContactStatus(userId);
@@ -30,7 +30,7 @@ function ContactRequestButton({ userId }) {
 
   if (status === "contact") {
     return (
-      <span className="flex items-center gap-1 rounded-full border border-blue-500/30 px-2.5 py-1 text-xs text-blue-400">
+      <span className="flex items-center gap-1 rounded-full border border-navy-light/40 px-2.5 py-1 text-xs text-navy-light dark:border-blue-400/30 dark:text-blue-400">
         <HiOutlineCheck size={13} />
         Contact
       </span>
@@ -60,7 +60,7 @@ function ContactRequestButton({ userId }) {
         <button
           onClick={() => respond({ requestId, status: "accepted" })}
           disabled={isResponding}
-          className="flex items-center gap-1 rounded-full bg-blue-600 px-2.5 py-1 text-xs text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+          className="flex items-center gap-1 rounded-full bg-navy-light px-2.5 py-1 text-xs text-white transition-colors hover:bg-navy disabled:opacity-50"
         >
           <HiOutlineCheck size={13} />
           Accept
@@ -85,7 +85,7 @@ function ContactRequestButton({ userId }) {
         send(userId);
       }}
       disabled={isSending}
-      className="flex items-center gap-1 rounded-full bg-blue-600 px-2.5 py-1 text-xs text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+      className="flex items-center gap-1 rounded-full bg-navy-light px-2.5 py-1 text-xs text-white transition-colors hover:bg-navy disabled:opacity-50"
     >
       <HiOutlineUserPlus size={13} />
       Add

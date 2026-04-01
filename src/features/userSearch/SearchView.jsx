@@ -2,7 +2,7 @@ import { useSearchedUsers } from "./useSearchedUsers";
 import Loader from "../../components/Loader";
 import { useUi } from "../../contexts/UiContext";
 import ShortTextMessage from "../../components/ShortTextMessage";
-import { HiOutlineUserCircle } from "react-icons/hi2";
+import UserAvatar from "../../components/UserAvatar";
 import { useNavigate } from "react-router-dom";
 import ContactRequestButton from "../contacts/ContactRequestButton";
 
@@ -26,22 +26,7 @@ function SearchResultRow({ id, avatar_url, fullname, username }) {
         onKeyDown={(e) => e.key === "Enter" && handleRowClick()}
         className="flex min-w-0 flex-1 cursor-pointer select-none items-center gap-2"
       >
-        <span className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-full">
-          {avatar_url ? (
-            <img
-              src={avatar_url}
-              alt={fullname}
-              className="pointer-events-none h-full w-full object-cover"
-            />
-          ) : (
-            <HiOutlineUserCircle
-              size={50}
-              viewBox="2 2 24 24"
-              opacity={0.5}
-              strokeWidth="1"
-            />
-          )}
-        </span>
+        <UserAvatar src={avatar_url} name={fullname} size={44} />
         <span className="flex min-w-0 flex-col">
           <span className="truncate font-bold">{fullname}</span>
           <span className="truncate text-sm opacity-60">@{username}</span>
