@@ -31,9 +31,9 @@ export function useGroupRealtime(groupId: string) {
 
           const msg: Message = { ...rawMsg, sender: (sender as AppUser) ?? undefined }
 
-          queryClient.setQueryData(
+          queryClient.setQueryData<{ pages: Message[][]; pageParams: unknown[] }>(
             ['groupMessages', groupId],
-            (old: any) => {
+            (old) => {
               if (!old) return old
 
               // Skip if it's already in cache (optimistic update)

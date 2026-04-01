@@ -46,9 +46,9 @@ export function useSendGroupMessage(groupId: string, currentUser: AppUser | null
         sender: currentUser ?? undefined,
       }
 
-      queryClient.setQueryData<ReturnType<typeof import('@tanstack/react-query').useInfiniteQuery>['data']>(
+      queryClient.setQueryData<{ pages: Message[][]; pageParams: unknown[] }>(
         ['groupMessages', groupId],
-        (old: any) => {
+        (old) => {
           if (!old) return old
           const pages = [...old.pages]
           pages[pages.length - 1] = [...(pages[pages.length - 1] ?? []), optimisticMsg]
@@ -61,11 +61,11 @@ export function useSendGroupMessage(groupId: string, currentUser: AppUser | null
 
     onError: (_err, _content, context) => {
       if (!context) return
-      queryClient.setQueryData(
+      queryClient.setQueryData<{ pages: Message[][]; pageParams: unknown[] }>(
         ['groupMessages', groupId],
-        (old: any) => {
+        (old) => {
           if (!old) return old
-          const pages = old.pages.map((page: Message[]) =>
+          const pages = old.pages.map((page) =>
             page.filter((m) => m.id !== context.optimisticMsg.id)
           )
           return { ...old, pages }
@@ -74,11 +74,11 @@ export function useSendGroupMessage(groupId: string, currentUser: AppUser | null
     },
 
     onSuccess: (newMsg, _content, context) => {
-      queryClient.setQueryData(
+      queryClient.setQueryData<{ pages: Message[][]; pageParams: unknown[] }>(
         ['groupMessages', groupId],
-        (old: any) => {
+        (old) => {
           if (!old) return old
-          const pages = old.pages.map((page: Message[]) =>
+          const pages = old.pages.map((page) =>
             page.map((m) => (m.id === context?.optimisticMsg.id ? newMsg : m))
           )
           return { ...old, pages }
